@@ -1,11 +1,13 @@
 import socket
 import json
 from flask import Flask
+from flask_cors import CORS
 from google import genai
 from pydantic import BaseModel
 
 HOST, PORT = '127.0.0.1', 42069
 app = Flask(__name__)
+CORS(app)
 
 # Try connecting to ghidra
 try:
