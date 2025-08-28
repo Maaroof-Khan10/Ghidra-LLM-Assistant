@@ -1,6 +1,6 @@
 import socket
 import json
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from google import genai
 from pydantic import BaseModel
@@ -79,36 +79,49 @@ def get_function_decompiled(func_name):
     response = get_function_decompiled_tool(func_name)
     return response
 
-@app.route('/analyze_function/<func_name>')
-def analyze_function(func_name):
-    data = get_function_decompiled_tool(func_name)
-    prompt = f'''
-        You are a expert reverse engineering assistant, the following function has been decompiled using ghidra into C:
+@app.route('/analyze_function', methods=['POST'])
+def analyze_function():
+    if request.method == "POST":
+        data = request.get_json()
+        func_name = data.get("funcName")
+        additional_prompts = data.get("addPrompts")
 
-        {data}
-        Input format (JSON):
-            current_name - The name of the function
-            decompiled - The C code
+        if not func_name or not additional_prompts:
+            return {"error": "Missing funcName or addPrompts"}, 400
+        
+        decomp_data = get_function_decompiled_tool(func_name)
+        prompt = f'''
+            You are a expert reverse engineering assistant, the following function has been decompiled using ghidra into C:
 
-        Output format (JSON):
-            current_name - The current name as it is
-            potential_new_name - New name based on the functionality of the function (If the function is "main", just return "main")
-            functionality - A short one paragraph summary of what the function actually does
-            analysis_priority - Give a score from 1 to 10 (Rating should be based on if the function contains the killswitch of a malware, API calls or other valuable information). Don't give a false high priority, make sure it deserves that number
-            interesting_calls - A list of functions that the current function calls which might be interesting in finding (Killswitches, API calls, or other valuable information to analyse malware)
-    '''
-    response = genClient.models.generate_content(
-        model=model,
-        contents=prompt,
-        config={
-            'response_mime_type': "application/json",
-            'response_schema': list[DecompFuncAnalysis]
-        }
-    )
+            {decomp_data}
 
-    json_res = json.loads(response.text)
+            Input format (JSON):
+                current_name - The name of the function
+                decompiled - The C code
 
-    return json_res[0]
+            Output format (JSON):
+                current_name - The current name as it is
+                potential_new_name - New name based on the functionality of the function (If the function is "main", just return "main")
+                functionality - A short one paragraph summary of what the function actually does
+                analysis_priority - Give a score from 1 to 10 (Rating should be based on if the function contains the killswitch of a malware, API calls or other valuable information). Don't give a false high priority, make sure it deserves that number
+                interesting_calls - A list of functions that the current function calls which might be interesting in finding (Killswitches, API calls, or other valuable information to analyse malware)
+            
+            Additional Information:
+
+            {additional_prompts}
+        '''
+        response = genClient.models.generate_content(
+            model=model,
+            contents=prompt,
+            config={
+                'response_mime_type': "application/json",
+                'response_schema': list[DecompFuncAnalysis]
+            }
+        )
+
+        json_res = json.loads(response.text)
+
+        return json_res[0]
 
 if __name__ == '__main__':
     app.run()

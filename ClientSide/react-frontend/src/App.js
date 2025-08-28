@@ -9,6 +9,9 @@ function App() {
   const [funcList, setFuncList] = useState([]);
   const [decomp, setDecomp] = useState({});
   const [loadedDecomp, setLoadingDecomp] = useState(false);
+  const [addPrompts, setAddPrompts] = useState("");
+  const [loadedAnalysis, setLoadedAnalysis] = useState(false);
+  const [analysisData, setAnalysisData] = useState({});
 
   useEffect(() => {
     const getList = async () => {
@@ -23,6 +26,20 @@ function App() {
     let res = await api.get("/get_function_decompiled/" + funcName)
     setDecomp(res.data);
     setLoadingDecomp(true);
+    setLoadedAnalysis(false);
+  }
+
+  const analyzeDecomp = async () => {
+    let data = {
+      funcName: decomp.current_name,
+      addPrompts: "None"
+    }
+    if (addPrompts !== "") {
+      data.addPrompts = addPrompts
+    }
+    let res = await api.post('/analyze_function', data);
+    setAnalysisData(res.data);
+    setLoadedAnalysis(true);
   }
 
   return (
@@ -35,10 +52,29 @@ function App() {
         </ul>
         
       </div>
-      {loadedDecomp && (
+      {loadedDecomp && decomp.current_name && (
         <div className='panel'>
-          <h1>{decomp.current_name}</h1>
-          <p>{decomp.decompiled}</p>
+          <div className='panel_header'>
+            <h1>{decomp.current_name}</h1>
+            <button onClick={() => {analyzeDecomp()}}>Analyze</button>
+          </div>
+          <div className='panel_content'>
+            <p>{decomp.decompiled}</p>
+            <textarea value={addPrompts} onChange={e => {setAddPrompts(e.target.value)}}></textarea>
+          </div>
+          {loadedAnalysis && (
+            <div className='panel_ai_analysis'>
+              <h3>Current name: {analysisData.current_name}</h3>
+              <h3>Potential new name: {analysisData.potential_new_name}</h3>
+              <h4>Priority: {analysisData.analysis_priority}</h4>
+              <p>{analysisData.functionality}</p>
+              <ul>
+                {analysisData.interesting_calls.map((func) => (
+                  <li key={func}>{func}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
