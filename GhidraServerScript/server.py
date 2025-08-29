@@ -14,15 +14,25 @@ decompiler = DecompInterface()
 decompiler.openProgram(program)
 
 # Tools go here
+
+def can_decompile(func):
+    # Check if the function is decompilable
+    decompFun = decompiler.decompileFunction(func, 60, ConsoleTaskMonitor())
+    if decompFun.decompileCompleted():
+        return True
+    else:
+        return False
+
 def list_functions():
     # Gets every function in the program
     funcs = []
     for func in fm.getFunctions(True):
-        funcs.append({
-            "name": func.getName(),
-            "entry": str(func.getEntryPoint()), # The address needs to be string
-            "analysis_priority": 0 # By default the priority will be zero before it gets analyzed
-        })
+        if can_decompile(func): # Check before adding
+            funcs.append({
+                "name": func.getName(),
+                "entry": str(func.getEntryPoint()), # The address needs to be string
+                "analysis_priority": 0 # By default the priority will be zero before it gets analyzed
+            })
     return funcs
 
 def get_function_decompiled(addr):
