@@ -3,6 +3,7 @@
 
 import socket
 import json
+import ghidra
 from ghidra.app.decompiler import DecompInterface
 from ghidra.util.task import ConsoleTaskMonitor
 
@@ -56,9 +57,19 @@ def get_function_decompiled(addr):
         output = {"message": "The function does not exist"}
     return output
 
+def rename_function(addr, new_name):
+    hex_addr = hex(int(addr, 16)) # To convert the string to hex address
+    address = program.getAddressFactory().getAddress(hex_addr) # Get the ghidra assigned address for the function
+    func = fm.getFunctionAt(address)
+    if func:
+        func.setName(new_name, ghidra.program.model.symbol.SourceType.USER_DEFINED) # Changes every instance
+        return {"message": "Rename successfull"}
+    return {"message": "Failed to rename"}
+
 functionMap = {
     "list_functions": list_functions,
-    "get_function_decompiled": get_function_decompiled
+    "get_function_decompiled": get_function_decompiled,
+    "rename_function": rename_function
 }
 
 # Creating and binding server

@@ -12,13 +12,14 @@ function App() {
   const [addPrompts, setAddPrompts] = useState("");
   const [loadedAnalysis, setLoadedAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState({});
+  const [newName, setNewName] = useState("")
+
+  const getList = async () => {
+    let res = await api.get("/list_functions");
+    setFuncList(res.data);
+  }
 
   useEffect(() => {
-    const getList = async () => {
-      let res = await api.get("/list_functions");
-      setFuncList(res.data);
-    }
-
     getList();
   }, [])
 
@@ -27,6 +28,8 @@ function App() {
     setDecomp(res.data);
     setLoadingDecomp(true);
     setLoadedAnalysis(false);
+    setAnalysisData({})
+    setNewName("")
   }
 
   const analyzeDecomp = async () => {
@@ -50,6 +53,27 @@ function App() {
   const reconnect = async () => {
     let res = await api.get("/reconnect")
     console.log(res.data);
+  }
+
+  const rename = async () => {
+    let data = {
+      addr: analysisData.entry,
+      new_name: newName
+    }
+    if (newName === "") {
+      data.new_name = analysisData.potential_new_name;
+    }
+    let res = await api.post('/rename_function', data);
+    console.log(res.data);
+    setDecomp(prevData => ({
+      ...prevData,
+      current_name: data.new_name
+    }))
+    setAnalysisData(prevData => ({
+      ...prevData,
+      current_name: data.new_name
+    }))
+    getList();
   }
 
   return (
@@ -82,6 +106,8 @@ function App() {
               <h3>Current name: {analysisData.current_name}</h3>
               <p>Address in Ghidra: {analysisData.entry}</p>
               <h3>Potential new name: {analysisData.potential_new_name}</h3>
+              <input placeholder="Any name you like" value={newName} onChange={e => {setNewName(e.target.value)}}></input>
+              <button onClick={() => rename()}>Rename</button>
               <h4>Priority: {analysisData.analysis_priority}</h4>
               <p>{analysisData.functionality}</p>
               <ul>

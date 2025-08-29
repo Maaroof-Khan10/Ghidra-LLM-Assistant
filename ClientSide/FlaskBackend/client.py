@@ -80,6 +80,21 @@ def get_function_decompiled(addr):
     response = get_function_decompiled_tool(addr)
     return response
 
+@app.route('/rename_function', methods=['POST'])
+def rename_function():
+    if request.method == "POST":
+        json_data = request.get_json()
+        addr = json_data.get("addr")
+        new_name = json_data.get("new_name")
+        data = json.dumps({
+            'toCall': "rename_function",
+            "params": [str(addr), str(new_name)]
+        })
+        client.sendall(data.encode('utf_8'))
+        response = client.recv(65536).decode("utf-8")
+        return json.loads(response)
+        
+
 @app.route('/analyze_function', methods=['POST'])
 def analyze_function():
     if request.method == "POST":
