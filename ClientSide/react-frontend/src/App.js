@@ -42,8 +42,22 @@ function App() {
     setLoadedAnalysis(true);
   }
 
+  const quitConn = async () => {
+    let res = await api.get("/quit")
+    console.log(res.data);
+  }
+
+  const reconnect = async () => {
+    let res = await api.get("/reconnect")
+    console.log(res.data);
+  }
+
   return (
     <div className="App">
+      <div className='nav'>
+        <button onClick={() => {reconnect()}}>Reconnect</button>
+        <button onClick={() => {quitConn()}}>Quit</button>
+      </div>
       <div className="sidebar">
         <ul>
           {funcList.map((func) => (
