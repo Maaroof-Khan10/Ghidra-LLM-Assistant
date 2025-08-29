@@ -25,34 +25,25 @@ def list_functions():
         })
     return funcs
 
-def get_function_decompiled(func_name):
-    # Returns decompiled code for a specific functions
-    symbols = symbolTable.getSymbols(func_name) # Get the function from the symbol table
-    # Set to none
-    output = None
-    func = None
-
-    if symbols is None:
-        output = {"message": "The function does not exist"}
-    else:
-        for symbol in symbols:
-            print(f"Symbol: {symbol}, Type: {symbol.getSymbolType().toString()} to decompile")
-            if symbol.getSymbolType().toString() == "Function":
-                func = fm.getFunctionAt(symbol.getAddress())
-                break
-        if func is not None:
-            decompFun = decompiler.decompileFunction(func, 60, ConsoleTaskMonitor()) # Decompile the function with a 60 second timeout
-            if decompFun.decompileCompleted():
-                c_code = decompFun.getDecompiledFunction().getC()
-                output = {
-                    "current_name": func_name,
-                    "decompiled": c_code
-                }
-            else:
-                output = {"message": "Decompilation failed", "error": decompFun.getErrorMessage()}
+def get_function_decompiled(addr):
+    hex_addr = hex(int(addr, 16)) # To convert the string to hex address
+    address = program.getAddressFactory().getAddress(hex_addr) # Get the ghidra assigned address for the function
+    func = fm.getFunctionAt(address)
+    if func is not None:
+        print(f"Trying to decompile {func}")
+        decompFun = decompiler.decompileFunction(func, 60, ConsoleTaskMonitor()) # Decompile the function with a 60 second timeout
+        if decompFun.decompileCompleted():
+            print(f"Successfully decompiled {func}")
+            c_code = decompFun.getDecompiledFunction().getC()
+            output = {
+                "entry": addr,
+                "current_name": func.getName(),
+                "decompiled": c_code
+            }
         else:
-            output = {"message": "The function does not exist"}
-
+            output = {"message": "Decompilation failed", "error": decompFun.getErrorMessage()}
+    else:
+        output = {"message": "The function does not exist"}
     return output
 
 functionMap = {

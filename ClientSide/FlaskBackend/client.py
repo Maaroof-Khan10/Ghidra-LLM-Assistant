@@ -23,6 +23,7 @@ model = "gemini-2.5-flash"
 # Base models for structured output through gemini
 
 class DecompFuncAnalysis(BaseModel):
+    entry: str
     current_name: str
     potential_new_name: str
     functionality: str
@@ -31,10 +32,10 @@ class DecompFuncAnalysis(BaseModel):
 
 
 # Tools
-def get_function_decompiled_tool(func_name):
+def get_function_decompiled_tool(addr):
     data = json.dumps({
         'toCall': "get_function_decompiled",
-        "params": [str(func_name)]
+        "params": [str(addr)]
     })
     client.sendall(data.encode("utf-8"))
     response = client.recv(65536).decode("utf-8")
@@ -74,32 +75,34 @@ def list_functions():
     response = client.recv(65536).decode("utf-8")
     return json.loads(response)
 
-@app.route('/get_function_decompiled/<func_name>')
-def get_function_decompiled(func_name):
-    response = get_function_decompiled_tool(func_name)
+@app.route('/get_function_decompiled/<addr>')
+def get_function_decompiled(addr):
+    response = get_function_decompiled_tool(addr)
     return response
 
 @app.route('/analyze_function', methods=['POST'])
 def analyze_function():
     if request.method == "POST":
         data = request.get_json()
-        func_name = data.get("funcName")
+        addr = data.get("addr")
         additional_prompts = data.get("addPrompts")
 
-        if not func_name or not additional_prompts:
+        if not addr or not additional_prompts:
             return {"error": "Missing funcName or addPrompts"}, 400
         
-        decomp_data = get_function_decompiled_tool(func_name)
+        decomp_data = get_function_decompiled_tool(addr)
         prompt = f'''
             You are a expert reverse engineering assistant, the following function has been decompiled using ghidra into C:
 
             {decomp_data}
 
             Input format (JSON):
+                entry - The address of the function in ghidra
                 current_name - The name of the function
                 decompiled - The C code
 
             Output format (JSON):
+                entry - The entry as it is exactly
                 current_name - The current name as it is
                 potential_new_name - New name based on the functionality of the function (If the function is "main", just return "main")
                 functionality - A short one paragraph summary of what the function actually does
