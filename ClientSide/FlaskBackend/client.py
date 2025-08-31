@@ -95,6 +95,17 @@ def get_function_decompiled_tool(addr):
 
 # Endpoints
 
+@app.route("/set_path", methods=["POST"])
+def set_path():
+    if request.method == 'POST':
+        json_data = request.get_json()
+        path = json_data.get("path")
+        if os.path.isdir(path):
+            return {"message": "Path is invalid or does not exist"}
+        else:
+            analysis_storage = f"{path}/analyzed.json"
+            return {"message": "Path set successfully"}
+
 @app.route("/quit")
 def quit_server():
     data = json.dumps({

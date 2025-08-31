@@ -6,13 +6,14 @@ const api = axios.create({
 })
 
 function App() {
+  const [path, setPath] = useState("");
   const [funcList, setFuncList] = useState([]);
   const [decomp, setDecomp] = useState({});
   const [loadedDecomp, setLoadingDecomp] = useState(false);
   const [addPrompts, setAddPrompts] = useState("");
   const [loadedAnalysis, setLoadedAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState({});
-  const [newName, setNewName] = useState("")
+  const [newName, setNewName] = useState("");
 
   const getList = async () => {
     let res = await api.get("/list_functions");
@@ -22,6 +23,16 @@ function App() {
   useEffect(() => {
     getList();
   }, [])
+
+  const set_path = async () => {
+    if (path !== "") {
+      let data = {
+        path: path
+      }
+      let res = await api.post("/set_path", data)
+      console.log(res.data);
+    }
+  }
 
   const getDecomp = async (addr) => {
     let res = await api.get("/get_function_decompiled/" + addr)
@@ -79,6 +90,8 @@ function App() {
   return (
     <div className="App">
       <div className='nav'>
+        <input placeholder='Enter the path to store the analysis data' value={path} onChange={(e) => {setPath(e.target.value)}}></input>
+        <button onClick={() => {set_path()}}>Set Path</button>
         <button onClick={() => {reconnect()}}>Reconnect</button>
         <button onClick={() => {quitConn()}}>Quit</button>
       </div>
