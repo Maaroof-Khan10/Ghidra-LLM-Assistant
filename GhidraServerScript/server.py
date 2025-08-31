@@ -63,7 +63,7 @@ def rename_function(addr, new_name):
     func = fm.getFunctionAt(address)
     if func:
         func.setName(new_name, ghidra.program.model.symbol.SourceType.USER_DEFINED) # Changes every instance
-        return {"message": "Rename successfull"}
+        return {"message": "Rename successful"}
     return {"message": "Failed to rename"}
 
 functionMap = {
