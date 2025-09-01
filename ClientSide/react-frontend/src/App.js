@@ -17,7 +17,12 @@ function App() {
 
   const getList = async () => {
     let res = await api.get("/list_functions");
-    setFuncList(res.data);
+
+    const sorted = res.data.sort(
+      (a, b) => b.analysis_priority - a.analysis_priority
+    );
+
+    setFuncList(sorted);
   }
 
   useEffect(() => {
@@ -52,6 +57,7 @@ function App() {
       data.addPrompts = addPrompts
     }
     let res = await api.post('/analyze_function', data);
+    getList();
     setAnalysisData(res.data);
     setLoadedAnalysis(true);
   }
@@ -98,7 +104,7 @@ function App() {
       <div className="sidebar">
         <ul>
           {funcList.map((func) => (
-            <li key={func.entry} onClick={() => {getDecomp(func.entry)}}>{func.name} - {func.entry}</li>
+            <li key={func.entry} onClick={() => {getDecomp(func.entry)}}>{func.name} - {func.entry} - {func.analysis_priority}</li>
           ))}
         </ul>
         

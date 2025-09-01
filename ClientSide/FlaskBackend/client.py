@@ -100,11 +100,10 @@ def set_path():
     if request.method == 'POST':
         json_data = request.get_json()
         path = json_data.get("path")
-        if os.path.isdir(path):
-            return {"message": "Path is invalid or does not exist"}
-        else:
-            analysis_storage = f"{path}/analyzed.json"
-            return {"message": "Path set successfully"}
+        if not os.path.isdir(path):
+            return {"message": "Path is invalid or does not exist"}, 400
+        analysis_storage = os.path.join(path, "analyzed.json")
+        return {"message": f"Path set successfully. Saved at {analysis_storage}"}
 
 @app.route("/quit")
 def quit_server():
@@ -135,8 +134,12 @@ def list_functions():
         'params': []
     })
     client.sendall(data.encode("utf-8"))
-    response = client.recv(65536).decode("utf-8")
-    return json.loads(response)
+    response = json.loads(client.recv(65536).decode("utf-8"))
+    for item in response: # If the function is already analyzed assign the priority
+        check_exist = read_by_entry(item.get("entry"))
+        if check_exist and "analysis_priority" in check_exist:
+            item["analysis_priority"] = check_exist["analysis_priority"]
+    return response
 
 @app.route('/get_function_decompiled/<addr>')
 def get_function_decompiled(addr):
