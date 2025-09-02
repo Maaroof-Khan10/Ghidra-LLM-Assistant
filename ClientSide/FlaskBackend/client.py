@@ -10,11 +10,12 @@ HOST, PORT = '127.0.0.1', 42069
 app = Flask(__name__)
 CORS(app)
 
-analysis_storage = "analyzed.json" # The path where file it to be stored
+app.config["ANALYSIS_STORAGE"] = "analyzed.json" # The path where file it to be stored
 
 # CRUD operations to store the analysis file
 
 def load_data():
+    analysis_storage = app.config["ANALYSIS_STORAGE"]
     if analysis_storage != "":
         if not os.path.exists(analysis_storage):
             with open(analysis_storage, "w") as file:
@@ -23,6 +24,7 @@ def load_data():
             return json.load(file)
         
 def save_data(data):
+    analysis_storage = storage = app.config["ANALYSIS_STORAGE"]
     with open(analysis_storage, "w") as file:
         json.dump(data, file, indent=4)
 
@@ -103,6 +105,7 @@ def set_path():
         if not os.path.isdir(path):
             return {"message": "Path is invalid or does not exist"}, 400
         analysis_storage = os.path.join(path, "analyzed.json")
+        app.config["ANALYSIS_STORAGE"] = analysis_storage
         return {"message": f"Path set successfully. Saved at {analysis_storage}"}
 
 @app.route("/quit")

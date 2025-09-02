@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import axios from 'axios';
 
 const api = axios.create({
@@ -36,6 +36,7 @@ function App() {
       }
       let res = await api.post("/set_path", data)
       console.log(res.data);
+      getList();
     }
   }
 
