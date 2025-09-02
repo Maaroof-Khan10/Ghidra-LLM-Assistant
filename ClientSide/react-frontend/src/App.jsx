@@ -16,16 +16,21 @@ function App() {
   const [newName, setNewName] = useState("");
 
   const getList = async () => {
-    let res = await api.get("/list_functions");
+    try {
+      let res = await api.get("/list_functions");
 
-    const sorted = res.data.sort(
-      (a, b) => b.analysis_priority - a.analysis_priority
-    );
+      const sorted = res.data.sort(
+        (a, b) => b.analysis_priority - a.analysis_priority
+      );
 
-    setFuncList(sorted);
+      setFuncList(sorted);
+    } catch (err) {
+      console.error("Error fetching functions, make sure flask server is running:", err);
+    }
   }
 
   useEffect(() => {
+    // Keeping the path persistant using localStorage
     try {
       const savedPath = localStorage.getItem("analysisPath");
       if (savedPath) {
@@ -34,6 +39,7 @@ function App() {
     } catch (err) {
       console.error("Error reading path from local storage:", err);
     }
+    // Fetching functions
     getList();
   }, [])
   
@@ -49,68 +55,92 @@ function App() {
   }, [path])
 
   const set_path = async () => {
-    if (path !== "") {
-      let data = {
-        path: path
+    try {
+      if (path !== "") {
+        let data = {
+          path: path
+        }
+        let res = await api.post("/set_path", data)
+        console.log(res.data);
+        getList();
       }
-      let res = await api.post("/set_path", data)
-      console.log(res.data);
-      getList();
+    } catch (err) {
+      console.error("Error setting path:", err);
     }
   }
 
   const getDecomp = async (addr) => {
-    let res = await api.get("/get_function_decompiled/" + addr)
-    setDecomp(res.data);
-    setLoadingDecomp(true);
-    setLoadedAnalysis(false);
-    setAnalysisData({})
-    setNewName("")
+    try {
+      let res = await api.get("/get_function_decompiled/" + addr)
+      setDecomp(res.data);
+      setLoadingDecomp(true);
+      setLoadedAnalysis(false);
+      setAnalysisData({})
+      setNewName("")
+    } catch (err) {
+      console.error("Error in decompiling, make sure flask and ghidra servers are running:", err);
+    }
   }
 
   const analyzeDecomp = async () => {
-    let data = {
-      addr: decomp.entry,
-      addPrompts: "None"
+    try {
+        let data = {
+        addr: decomp.entry,
+        addPrompts: "None"
+      }
+      if (addPrompts !== "") {
+        data.addPrompts = addPrompts
+      }
+      let res = await api.post('/analyze_function', data);
+      getList();
+      setAnalysisData(res.data);
+      setLoadedAnalysis(true);
+    } catch (err) {
+      console.error("Error in analysis, make sure the flask server, ghidra server are running and API key + Path are proper:", err);
     }
-    if (addPrompts !== "") {
-      data.addPrompts = addPrompts
-    }
-    let res = await api.post('/analyze_function', data);
-    getList();
-    setAnalysisData(res.data);
-    setLoadedAnalysis(true);
   }
 
   const quitConn = async () => {
-    let res = await api.get("/quit")
-    console.log(res.data);
+    try {
+      let res = await api.get("/quit")
+      console.log(res.data);
+    } catch (err) {
+      console.error("Error quitting, make sure the flask server and ghidra server are running:", err);
+    }
   }
 
   const reconnect = async () => {
-    let res = await api.get("/reconnect")
-    console.log(res.data);
+    try {
+      let res = await api.get("/reconnect")
+      console.log(res.data);
+    } catch (err) {
+      console.error("Error reconnecting, make sure the flask server and ghidra server are running:", err);
+    }
   }
 
   const rename = async () => {
-    let data = {
-      addr: analysisData.entry,
-      new_name: newName
+    try {
+      let data = {
+        addr: analysisData.entry,
+        new_name: newName
+      }
+      if (newName === "") {
+        data.new_name = analysisData.potential_new_name;
+      }
+      let res = await api.post('/rename_function', data);
+      console.log(res.data);
+      setDecomp(prevData => ({
+        ...prevData,
+        current_name: data.new_name
+      }))
+      setAnalysisData(prevData => ({
+        ...prevData,
+        current_name: data.new_name
+      }))
+      getList();
+    } catch (err) {
+      console.error("Error renaming function, make sure the flask server and ghidra server are running:", err);
     }
-    if (newName === "") {
-      data.new_name = analysisData.potential_new_name;
-    }
-    let res = await api.post('/rename_function', data);
-    console.log(res.data);
-    setDecomp(prevData => ({
-      ...prevData,
-      current_name: data.new_name
-    }))
-    setAnalysisData(prevData => ({
-      ...prevData,
-      current_name: data.new_name
-    }))
-    getList();
   }
 
   return (
