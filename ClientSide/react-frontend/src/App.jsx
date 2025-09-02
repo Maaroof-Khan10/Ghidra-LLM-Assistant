@@ -26,8 +26,27 @@ function App() {
   }
 
   useEffect(() => {
+    try {
+      const savedPath = localStorage.getItem("analysisPath");
+      if (savedPath) {
+        setPath(savedPath);
+      }
+    } catch (err) {
+      console.error("Error reading path from local storage:", err);
+    }
     getList();
   }, [])
+  
+  // Keeping the path persistant using localStorage
+  useEffect(() => {
+    try {
+      if (path) {
+        localStorage.setItem("analysisPath", path);
+      }
+    } catch (err) {
+      console.error("Error saving path to localStorage:", err);
+    }
+  }, [path])
 
   const set_path = async () => {
     if (path !== "") {
