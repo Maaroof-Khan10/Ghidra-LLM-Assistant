@@ -129,9 +129,11 @@ function App() {
       }
       let res = await api.post('/rename_function', data);
       console.log(res.data);
+      let newDecomp = decomp.decompiled.replaceAll(decomp.current_name, newName);
       setDecomp(prevData => ({
         ...prevData,
-        current_name: data.new_name
+        current_name: data.new_name,
+        decompiled: newDecomp
       }))
       setAnalysisData(prevData => ({
         ...prevData,
