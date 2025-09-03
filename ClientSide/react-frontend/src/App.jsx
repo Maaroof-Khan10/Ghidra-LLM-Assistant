@@ -146,44 +146,43 @@ function App() {
   }
 
   return (
-    <div className="flex">
-      <div className="w-80 bg-gray-800 h-full text-white px-4 py-2">
-        <div className='my-2 mb-4'>
-          <h1 className='text-2xl font-bold'>Functions available</h1>
+    <div className="flex flex-col h-full">
+      <nav className='flex bg-gray-900 text-white px-5 py-3 justify-between'>
+        <div className='flex items-center text-xl'>
+          <span className='font-semibold'>DragonAttack</span>
         </div>
-        <hr />
-        <ul className='mt-3 font-bold'>
-          {funcList.map((func) => (
-            <li 
-            key={func.entry} 
-            onClick={() => {getDecomp(func.entry)}}
-            className='mb-2 rounded hover:shadow hover:bg-blue-400 py-2 px-3'
-            >
-              {func.name} - {func.entry} - {func.analysis_priority}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className='flex flex-col w-full'>
-        <nav className='flex bg-gray-900 text-white px-4 py-3 justify-between'>
-          <div className='flex items-center text-xl'>
-            <span className='font-semibold'>DragonAttack</span>
+        <div className='flex items-center gap-x-5 w-1/2'>
+          <input 
+          placeholder='Enter the path to store the analysis data' 
+          value={path} 
+          onChange={(e) => {setPath(e.target.value)}}
+          className='w-full h-10 bg-amber-50 text-gray-900 rounded-lg'
+          />
+        </div>
+        <div className="flex justify-center gap-5">
+          <button onClick={() => {set_path()}}>Set Path</button>
+          <button onClick={() => {reconnect()}}>Reconnect</button>
+          <button onClick={() => {quitConn()}}>Quit</button>
+        </div>
+      </nav>
+      <div className='flex'>
+        <div className="w-80 bg-gray-800 text-white px-4 py-2">
+          <div className='my-2 mb-4'>
+            <h1 className='text-2xl font-bold'>Functions available</h1>
           </div>
-          <div className='flex items-center gap-x-5'>
-            <input 
-            placeholder='Enter the path to store the analysis data' 
-            value={path} 
-            onChange={(e) => {setPath(e.target.value)}}
-            className='w-full h-10 bg-amber-50 text-gray-900 rounded-lg'
-            />
-          </div>
-          <div className="flex justify-center gap-5">
-            <button onClick={() => {set_path()}}>Set Path</button>
-            <button onClick={() => {reconnect()}}>Reconnect</button>
-            <button onClick={() => {quitConn()}}>Quit</button>
-          </div>
-        </nav>
-
+          <hr />
+          <ul className='mt-3 font-bold'>
+            {funcList.map((func) => (
+              <li 
+              key={func.entry} 
+              onClick={() => {getDecomp(func.entry)}}
+              className='mb-2 rounded hover:shadow hover:bg-blue-400 py-2 px-3'
+              >
+                {func.name} - {func.entry} - {func.analysis_priority}
+              </li>
+            ))}
+          </ul>
+        </div>
         {loadedDecomp && decomp.current_name && (
         <div className='panel'>
           <div className='panel_header'>
