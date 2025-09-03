@@ -183,35 +183,47 @@ function App() {
             ))}
           </ul>
         </div>
-        {loadedDecomp && decomp.current_name && (
-        <div className='panel'>
-          <div className='panel_header'>
-            <h1>{decomp.current_name}</h1>
-            <p>Ghidra Address: {decomp.entry}</p>
-            <button onClick={() => {analyzeDecomp()}}>Analyze</button>
-          </div>
-          <div className='panel_content'>
-            <p>{decomp.decompiled}</p>
-            <textarea value={addPrompts} onChange={e => {setAddPrompts(e.target.value)}}></textarea>
-          </div>
-          {loadedAnalysis && (
-                <div className='panel_ai_analysis'>
-                  <h3>Current name: {analysisData.current_name}</h3>
+        <div className='flex flex-col mx-2 my-5 gap-y-10'>
+            {loadedDecomp && decomp.current_name && (
+              <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
+                <div className='flex justify-between items-center mb-3'>
+                  <h1 className='text-3xl'>{decomp.current_name}</h1>
+                  <p className='text-2xl'>Ghidra Address: {decomp.entry}</p>
+                  <button onClick={() => {analyzeDecomp()}} className='bg-blue-500 w-1/6 p-3 rounded-lg hover:shadow-xl/20 hover:bg-blue-400'>Analyze</button>
+                </div>
+                <div>
+                  <p>{decomp.decompiled}</p>
+                </div>
+                <div>
+                  <textarea value={addPrompts} onChange={e => {setAddPrompts(e.target.value)}}></textarea>
+                </div>
+              </div>
+            )}
+            {loadedAnalysis && (
+              <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
+                <div className='flex'>
+                  <h1>Current name: {analysisData.current_name}</h1>
                   <p>Address in Ghidra: {analysisData.entry}</p>
+                  <h4>Priority: {analysisData.analysis_priority}</h4>
+                </div>
+                <div className='flex'>
                   <h3>Potential new name: {analysisData.potential_new_name}</h3>
                   <input placeholder="Any name you like" value={newName} onChange={e => {setNewName(e.target.value)}}></input>
                   <button onClick={() => rename()}>Rename</button>
-                  <h4>Priority: {analysisData.analysis_priority}</h4>
+                </div>
+                <div>
                   <p>{analysisData.functionality}</p>
+                </div>
+                <div className='flex flex-col'>
                   <ul>
                     {analysisData.interesting_calls.map((func) => (
                       <li key={func}>{func}</li>
                     ))}
                   </ul>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+        </div>
       </div>
     </div>
   );
