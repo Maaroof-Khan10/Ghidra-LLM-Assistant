@@ -174,7 +174,7 @@ def analyze_function():
         additional_prompts = data.get("addPrompts")
         pre_analyzed = read_by_entry(addr)
 
-        if pre_analyzed:
+        if pre_analyzed and additional_prompts == "None":
             return pre_analyzed
         else:
 
@@ -214,7 +214,10 @@ def analyze_function():
             )
 
             json_res = json.loads(response.text)
-            create(json_res[0])
+            if additional_prompts == "None":
+                create(json_res[0])
+            else:
+                update_by_entry(addr, json_res[0])
 
             return json_res[0]
 
