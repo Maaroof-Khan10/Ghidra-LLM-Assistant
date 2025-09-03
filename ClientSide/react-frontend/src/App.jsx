@@ -149,8 +149,8 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <nav className='flex bg-gray-900 text-white px-5 py-3 justify-between'>
+    <div className="flex flex-col">
+      <nav className='flex h-15 bg-gray-900 text-white px-5 py-3 justify-between sticky top-0'>
         <div className='flex items-center text-xl'>
           <span className='font-semibold'>DragonAttack</span>
         </div>
@@ -169,24 +169,24 @@ function App() {
         </div>
       </nav>
       <div className='flex'>
-        <div className="w-80 bg-gray-800 text-white px-4 py-2">
+        <div className="w-80 h-[calc(100vh-50px)] bg-gray-800 text-white px-4 py-2 overflow-y-scroll">
           <div className='my-2 mb-4'>
             <h1 className='text-2xl font-bold'>Functions available</h1>
           </div>
           <hr />
-          <ul className='mt-3 font-bold overflow-auto'>
+          <ul className='mt-3 font-bold text-balance'>
             {funcList.map((func) => (
               <li 
               key={func.entry} 
               onClick={() => {getDecomp(func.entry)}}
-              className='mb-2 rounded hover:shadow hover:bg-blue-400 py-2 px-3'
+              className='mb-2 rounded hover:shadow hover:bg-blue-400 py-2 px-3 text-wrap overflow-x-clip'
               >
                 {func.name} - {func.entry} - {func.analysis_priority}
               </li>
             ))}
           </ul>
         </div>
-        <div className='flex flex-col mx-2 my-5 gap-y-10 w-full'>
+        <div className='flex flex-col mx-2 my-5 gap-y-10 w-full overflow-y-scroll h-[calc(100vh-100px)]'>
             {loadedDecomp && decomp.current_name && (
               <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
                 <div className='flex justify-between items-center mb-3'>
@@ -210,13 +210,13 @@ function App() {
                 </div>
                 <div className='flex flex-col my-2'>
                   <h1 className='text-xl my-1'>Additional Prompts:</h1>
-                  <textarea className='bg-gray-900 outline-blue-900 rounded-md' value={addPrompts} onChange={e => {setAddPrompts(e.target.value)}}></textarea>
+                  <textarea className='bg-gray-900 outline-blue-900 rounded-md p-2' value={addPrompts} onChange={e => {setAddPrompts(e.target.value)}}></textarea>
                 </div>
               </div>
             )}
             {loadedAnalysis && (
               <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
-                <h1 className='text-2xl'>AI Analysis</h1>
+                <h1 className='text-2xl'>Gemini Analysis</h1>
                 <hr className='my-2'/>
                 <div className='flex'>
                   <h2 className='text-xl'>Priority: {analysisData.analysis_priority}</h2>
@@ -228,15 +228,19 @@ function App() {
                     <button className='bg-blue-500 w-1/5 p-1.5 rounded-lg hover:shadow-xl/20 hover:bg-blue-400' onClick={() => rename()}>Rename</button>
                   </div>
                 </div>
-                <div>
-                  <p>{analysisData.functionality}</p>
+                <div className='flex flex-col my-2 gap-y-2'>
+                  <h3 className='text-xl'>Functionality</h3>
+                  <p className='bg-gray-900 p-2 rounded-lg'>{analysisData.functionality}</p>
                 </div>
-                <div className='flex flex-col'>
-                  <ul>
-                    {analysisData.interesting_calls.map((func) => (
-                      <li key={func}>{func}</li>
-                    ))}
-                  </ul>
+                <div className='flex flex-col my-2 gap-y-2'>
+                  <h3 className='text-xl'>Interesting function calls</h3>
+                  <div className='bg-gray-900 p-2 rounded-lg '>
+                    <ul className='list-disc list-inside'>
+                      {analysisData.interesting_calls.map((func) => (
+                        <li className='text-balance' key={func}>{func}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             )}
