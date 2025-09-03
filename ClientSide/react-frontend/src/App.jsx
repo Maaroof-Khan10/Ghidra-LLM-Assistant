@@ -169,7 +169,7 @@ function App() {
         </div>
       </nav>
       <div className='flex'>
-        <div className="w-80 h-[calc(100vh-50px)] bg-gray-800 text-white px-4 py-2 overflow-y-scroll">
+        <div className="w-80 h-[calc(100vh-50px)] bg-gray-800 text-white px-4 py-2 overflow-y-scroll scrollbar">
           <div className='my-2 mb-4'>
             <h1 className='text-2xl font-bold'>Functions available</h1>
           </div>
@@ -186,9 +186,9 @@ function App() {
             ))}
           </ul>
         </div>
-        <div className='flex flex-col mx-2 my-5 gap-y-10 w-full overflow-y-scroll h-[calc(100vh-100px)]'>
+        <div className='flex flex-col mx-2 my-5 gap-y-10 w-full overflow-y-scroll h-[calc(100vh-90px)] scrollbar'>
             {loadedDecomp && decomp.current_name && (
-              <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
+              <div className='flex flex-col p-5 py-8 bg-gray-800 rounded-lg'>
                 <div className='flex justify-between items-center mb-3'>
                   <h1 className='text-3xl'>{decomp.current_name}</h1>
                   <p className='text-2xl'>Ghidra Address: {decomp.entry}</p>
@@ -215,7 +215,7 @@ function App() {
               </div>
             )}
             {loadedAnalysis && (
-              <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
+              <div className='flex flex-col p-5 py-8 bg-gray-800 rounded-lg'>
                 <h1 className='text-2xl'>Gemini Analysis</h1>
                 <hr className='my-2'/>
                 <div className='flex'>
@@ -234,7 +234,7 @@ function App() {
                 </div>
                 <div className='flex flex-col my-2 gap-y-2'>
                   <h3 className='text-xl'>Interesting function calls</h3>
-                  <div className='bg-gray-900 p-2 rounded-lg '>
+                  <div className='bg-gray-900 p-2 px-5 rounded-lg '>
                     <ul className='list-disc list-inside'>
                       {analysisData.interesting_calls.map((func) => (
                         <li className='text-balance' key={func}>{func}</li>
