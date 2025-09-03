@@ -1,5 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react';
 import axios from 'axios';
+import {Prism as SyntaxHighlighter} from "react-syntax-highlighter";
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const api = axios.create({
   baseURL: "http://localhost:5000/"
@@ -94,6 +96,7 @@ function App() {
       let res = await api.post('/analyze_function', data);
       getList();
       setAnalysisData(res.data);
+      setNewName(res.data.potential_new_name)
       setLoadedAnalysis(true);
     } catch (err) {
       console.error("Error in analysis, make sure the flask server, ghidra server are running and API key + Path are proper:", err);
@@ -156,7 +159,7 @@ function App() {
           placeholder='Enter the path to store the analysis data' 
           value={path} 
           onChange={(e) => {setPath(e.target.value)}}
-          className='w-full h-10 bg-amber-50 text-gray-900 rounded-lg'
+          className='w-full h-10 bg-amber-50 text-gray-900 rounded-lg px-2'
           />
         </div>
         <div className="flex justify-center gap-5">
@@ -171,7 +174,7 @@ function App() {
             <h1 className='text-2xl font-bold'>Functions available</h1>
           </div>
           <hr />
-          <ul className='mt-3 font-bold'>
+          <ul className='mt-3 font-bold overflow-auto'>
             {funcList.map((func) => (
               <li 
               key={func.entry} 
@@ -183,33 +186,47 @@ function App() {
             ))}
           </ul>
         </div>
-        <div className='flex flex-col mx-2 my-5 gap-y-10'>
+        <div className='flex flex-col mx-2 my-5 gap-y-10 w-full'>
             {loadedDecomp && decomp.current_name && (
               <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
                 <div className='flex justify-between items-center mb-3'>
                   <h1 className='text-3xl'>{decomp.current_name}</h1>
                   <p className='text-2xl'>Ghidra Address: {decomp.entry}</p>
-                  <button onClick={() => {analyzeDecomp()}} className='bg-blue-500 w-1/6 p-3 rounded-lg hover:shadow-xl/20 hover:bg-blue-400'>Analyze</button>
+                  <button onClick={() => {analyzeDecomp()}} className='text-xl bg-blue-500 w-1/6 p-3 rounded-lg hover:shadow-xl/20 hover:bg-blue-400'>Analyze</button>
                 </div>
                 <div>
-                  <p>{decomp.decompiled}</p>
+                  <SyntaxHighlighter
+                    language="c"
+                    style={vscDarkPlus}
+                    customStyle={{
+                      backgroundColor: "#101828",
+                      borderRadius: "0.5rem",
+                      padding: "1rem",
+                      fontSize: "0.875rem"
+                    }}
+                  >
+                    {decomp.decompiled}
+                  </SyntaxHighlighter>
                 </div>
-                <div>
-                  <textarea value={addPrompts} onChange={e => {setAddPrompts(e.target.value)}}></textarea>
+                <div className='flex flex-col my-2'>
+                  <h1 className='text-xl my-1'>Additional Prompts:</h1>
+                  <textarea className='bg-gray-900 outline-blue-900 rounded-md' value={addPrompts} onChange={e => {setAddPrompts(e.target.value)}}></textarea>
                 </div>
               </div>
             )}
             {loadedAnalysis && (
               <div className='flex flex-col p-5 bg-gray-800 rounded-lg'>
+                <h1 className='text-2xl'>AI Analysis</h1>
+                <hr className='my-2'/>
                 <div className='flex'>
-                  <h1>Current name: {analysisData.current_name}</h1>
-                  <p>Address in Ghidra: {analysisData.entry}</p>
-                  <h4>Priority: {analysisData.analysis_priority}</h4>
+                  <h2 className='text-xl'>Priority: {analysisData.analysis_priority}</h2>
                 </div>
-                <div className='flex'>
-                  <h3>Potential new name: {analysisData.potential_new_name}</h3>
-                  <input placeholder="Any name you like" value={newName} onChange={e => {setNewName(e.target.value)}}></input>
-                  <button onClick={() => rename()}>Rename</button>
+                <div className='flex justify-between'>
+                  <h3 className='text-xl w-1/2'>Potential new name:</h3>
+                  <div className='flex justify-around w-1/2'>
+                    <input className='bg-gray-900 outline-blue-900 rounded-md p-1.5 w-3/4' placeholder="Any name you like" value={newName} onChange={e => {setNewName(e.target.value)}}></input>
+                    <button className='bg-blue-500 w-1/5 p-1.5 rounded-lg hover:shadow-xl/20 hover:bg-blue-400' onClick={() => rename()}>Rename</button>
+                  </div>
                 </div>
                 <div>
                   <p>{analysisData.functionality}</p>
