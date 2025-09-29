@@ -183,27 +183,37 @@ def analyze_function():
             
             decomp_data = get_function_decompiled_tool(addr)
             prompt = f'''
-                You are a expert reverse engineering assistant, the following function has been decompiled using ghidra into C:
+            You are an expert reverse-engineering assistant. The following function was
+            decompiled with Ghidra into C:
 
-                {decomp_data}
+            {decomp_data}
 
-                Input format (JSON):
-                    entry - The address of the function in ghidra
-                    current_name - The name of the function
-                    decompiled - The C code
+            Input (JSON):
+            entry         - address of the function in Ghidra
+            current_name  - function name
+            decompiled    - the C code
 
-                Output format (JSON):
-                    entry - The entry as it is exactly
-                    current_name - The current name as it is
-                    potential_new_name - New name based on the functionality of the function (If the function is "main", just return "main")
-                    functionality - A short one paragraph summary of what the function actually does
-                    analysis_priority - Give a score from 1 to 10 (Rating should be based on if the function contains the killswitch of a malware, API calls or other valuable information). Don't give a false high priority, make sure it deserves that number
-                    interesting_calls - A list of functions that the current function calls which might be interesting in finding (Killswitches, API calls, or other valuable information to analyse malware)
-                
-                Additional Information:
+            Output (JSON):
+            entry
+            current_name
+            potential_new_name - new name based on functionality (return "main" if main)
+            functionality       - one short paragraph summary
+            analysis_priority   - integer 0-10 (see Priority rules)
+            interesting_calls   - ordered list of called functions (most → least important)
 
-                {additional_prompts}
+            Priority rules (0–10):
+            +2  if main or central to program
+            +1  if function calls other functions
+            +1  if it calls any "interesting" function (killswitch/API/etc.)
+            +1  if function contains strings or URLs (plain or obfuscated)
+            +1  if function returns a value
+            +1  if intentionally obfuscated
+            +3  if function can act as a killswitch or makes an API call
+
+            Additional information:
+            {additional_prompts}
             '''
+
             response = genClient.models.generate_content(
                 model=model,
                 contents=prompt,
@@ -214,10 +224,10 @@ def analyze_function():
             )
 
             json_res = json.loads(response.text)
-            if additional_prompts == "None":
-                create(json_res[0])
-            else:
+            if additional_prompts != "None" and pre_analyzed:
                 update_by_entry(addr, json_res[0])
+            else:
+                create(json_res[0])
 
             return json_res[0]
 
